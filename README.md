@@ -1,28 +1,42 @@
-# LCC-Discovery
+# Efficient LCC Discovery
 
-minimal runnable implementation + notebooks for lcc discovery on the paper scenarios.
+Efficient discovery of statistically significant, mutually-close cohorts
+("LCCs") across multiple data modalities, using threshold-based candidate
+pruning to avoid evaluating every pairwise combination.
 
-## contents
+Each instance may be observed in several modalities. For every ordered pair
+of instances, ranks (based on distance) are aggregated across the jointly
+available modalities and tested for significance via a closed-form null
+distribution with row-wise Benjamini–Hochberg FDR correction. Mutually
+significant pairs are merged into cohorts via connected components. The
+pruning strategy in `find_significant_pairs_efficient` produces exactly the
+same result as an exhaustive pairwise test, while skipping candidates whose
+optimistic lower bound already exceeds the significance threshold.
 
-- "LCCdiscovery.py": core implementation (numpy-only).
-- "miniExample.ipynb": tiny synthetic example.
-- "runScenario.ipynb": loads one scenario, plots modalities, runs discovery, plots lccs vs noise.
+## Contents
 
-- "data/scenario1" … "data/scenario6": csv files used by the notebooks.
+- [`eff_lcc.py`](eff_lcc.py): self-contained implementation (NumPy only)
+- [`demo.ipynb`](demo.ipynb): minimal example: generates 2D synthetic data
+  with 4 modalities containing one embedded cohort, runs the algorithm, and
+  visualizes the result
+- [`LICENSE`](LICENSE):  MIT
 
-## quickstart
+## Usage
 
-from the "codeRepo/" folder:
+```python
+import numpy as np
+from eff_lcc import discover_lcc_efficient
 
-- install deps: "python -m pip install -U numpy matplotlib"
-- open and run notebook: "runScenario.ipynb"
+# dist_matrices: list of (n, n) distance matrices, one per modality (NaN = missing)
+cohorts, noise = discover_lcc_efficient(dist_matrices, alpha=0.1, min_cluster_size=3)
+```
 
-in "runScenario.ipynb" (cell 3) set:
+## Requirements
 
-- "scenario = 'scenario1'" … "scenario6"
-- "alpha", "method" ("exact" or "normal"), "fdr" ("bh" or "by"), "min_component_size"
+- Python 3.9+
+- NumPy 
+- (matplotlib additionally required to run `demo.ipynb`)
 
-## notes
+## License
 
-- the notebook expects files in "data/<scenario>/" named "modalityX.csv" and "modalityX_dist.csv".
-- output is computed as: row-wise tests → fdr control per row → mutual edges → connected components = lccs; all remaining points are noise.
+MIT: see [LICENSE](LICENSE).
